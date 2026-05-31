@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Para a Dani.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Mono:wght@300;400&family=Italiana&family=Caveat:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --ink: #f0ebe3;
+      --ink-muted: #9a9090;
+      --rose: #e8a0b0;
+      --rose-dim: #b06070;
+      --lilac: #c4a8d4;
+      --sage: #a8c4a0;
+      --peach: #e8c4a0;
+      --gold: #d4b896;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--ink);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; line-height: 1.8;
+      overflow-x: hidden; cursor: none;
+    }
+
+    .cursor { position: fixed; width: 8px; height: 8px; background: var(--rose); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); mix-blend-mode: screen; transition: width 0.3s, height 0.3s; }
+    .cursor-ring { position: fixed; width: 32px; height: 32px; border: 1px solid rgba(232,160,176,0.35); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: all 0.12s ease; }
+
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='512' height='512' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity: 0.04; pointer-events: none; z-index: 0; }
+
+    #flowerCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.65; }
+
+    section { position: relative; z-index: 2; }
+
+    #cover {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 4rem 2rem;
+    }
+    .cover-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--rose-dim); margin-bottom: 2rem; opacity: 0; animation: fadeUp 1s ease 0.5s forwards; }
+    .cover-title { font-family: 'Italiana', serif; font-size: clamp(4.5rem, 16vw, 12rem); font-weight: 400; line-height: 0.9; color: var(--ink); letter-spacing: -0.02em; margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 1.2s ease 0.8s forwards; }
+    .cover-title span { color: var(--rose); }
+    .cover-sub { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.2rem; color: var(--ink-muted); opacity: 0; animation: fadeUp 1s ease 1.2s forwards; margin-bottom: 1.5rem; }
+
+    .cover-counter { opacity: 0; animation: fadeUp 1s ease 1.5s forwards; margin-bottom: 4rem; }
+    .counter-num { font-family: 'Italiana', serif; font-size: clamp(2.5rem, 6vw, 4rem); color: var(--rose); line-height: 1; }
+    .counter-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-muted); margin-top: 0.3rem; }
+
+    .cover-scroll { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--rose-dim); opacity: 0; animation: fadeUp 1s ease 2s forwards; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; }
+    .cover-scroll-line { width: 1px; height: 60px; background: linear-gradient(180deg, var(--rose-dim), transparent); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+    /* ── CARTA ── */
+    #letter { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6rem 2rem; }
+    .letter-wrap { max-width: 680px; width: 100%; }
+    .letter-ornament { font-size: 1.8rem; color: var(--rose-dim); text-align: center; margin-bottom: 3rem; letter-spacing: 1rem; }
+    .letter-block { margin-bottom: 2.5rem; opacity: 0; transform: translateY(28px); transition: opacity 0.9s ease, transform 0.9s ease; }
+    .letter-block.visible { opacity: 1; transform: translateY(0); }
+    .letter-section-mark { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--rose-dim); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 1rem; }
+    .letter-section-mark::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(176,96,112,0.4), transparent); }
+    .letter-p { font-size: 1.2rem; line-height: 1.95; color: var(--ink); font-weight: 300; }
+    .letter-p em { font-style: italic; color: var(--rose); }
+    .letter-p strong { font-weight: 600; color: var(--gold); }
+    .dropcap { float: left; font-family: 'Italiana', serif; font-size: 5rem; line-height: 0.75; color: var(--rose); margin-right: 0.1rem; margin-top: 0.3rem; }
+    .letter-divider { display: flex; align-items: center; gap: 1.5rem; margin: 2.5rem 0; opacity: 0; transform: translateY(20px); transition: opacity 0.8s ease, transform 0.8s ease; }
+    .letter-divider.visible { opacity: 1; transform: translateY(0); }
+    .divider-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(176,96,112,0.3), transparent); }
+    .divider-flower { font-size: 1rem; color: var(--rose-dim); }
+    .apology { font-size: 1.5rem; text-align: center; color: var(--rose); font-style: italic; padding: 1.5rem; border: 1px solid rgba(176,96,112,0.2); margin: 0.5rem 0; }
+    .letter-sign { text-align: right; margin-top: 3rem; opacity: 0; transform: translateY(20px); transition: opacity 0.9s ease 0.3s, transform 0.9s ease 0.3s; }
+    .letter-sign.visible { opacity: 1; transform: translateY(0); }
+    .sign-from { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 0.4rem; }
+    .sign-name { font-family: 'Italiana', serif; font-size: 2.8rem; color: var(--rose); }
+
+    #memories { min-height: 100vh; padding: 6rem 2rem; display: flex; flex-direction: column; align-items: center; }
+    .section-header { text-align: center; margin-bottom: 4rem; opacity: 0; transform: translateY(24px); transition: opacity 0.8s ease, transform 0.8s ease; }
+    .section-header.visible { opacity: 1; transform: translateY(0); }
+    .section-tag { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--rose-dim); margin-bottom: 0.8rem; display: block; }
+    .section-title { font-family: 'Italiana', serif; font-size: clamp(2rem, 5vw, 3.5rem); color: var(--ink); }
+    .section-title span { color: var(--rose); }
+
+    /* Grid de polaroids */
+    .polaroids { display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; max-width: 900px; }
+    .polaroid {
+      background: #f5f0e8; padding: 1rem 1rem 3.5rem;
+      width: 200px; box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+      opacity: 0; transform: translateY(30px) rotate(var(--rot));
+      transition: opacity 0.7s ease, transform 0.7s ease, box-shadow 0.3s;
+      cursor: none;
+    }
+    .polaroid:hover { transform: translateY(-8px) rotate(0deg) scale(1.04); box-shadow: 0 20px 50px rgba(0,0,0,0.6); z-index: 10; }
+    .polaroid.visible { opacity: 1; transform: translateY(0) rotate(var(--rot)); }
+    .polaroid.visible:hover { transform: translateY(-8px) rotate(0deg) scale(1.04); }
+    .polaroid:nth-child(1) { --rot: -3deg; transition-delay: 0.1s; }
+    .polaroid:nth-child(2) { --rot: 2deg; transition-delay: 0.25s; }
+    .polaroid:nth-child(3) { --rot: -2deg; transition-delay: 0.4s; }
+    .polaroid:nth-child(4) { --rot: 3.5deg; transition-delay: 0.55s; }
+
+    .polaroid-img {
+      width: 100%; aspect-ratio: 1;
+      object-fit: cover; display: block;
+      background: #2a2535;
+      position: relative;
+    }
+    .polaroid-placeholder {
+      width: 100%; aspect-ratio: 1;
+      background: linear-gradient(135deg, #1a1525 0%, #2a2040 50%, #1a1525 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.5rem;
+    }
+    .polaroid-placeholder span { font-size: 1.8rem; opacity: 0.5; }
+    .polaroid-placeholder small { font-family: 'DM Mono', monospace; font-size: 0.5rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.25); text-align: center; padding: 0 0.5rem; }
+    .polaroid-caption { font-family: 'Caveat', cursive; font-size: 0.95rem; color: #3a3030; text-align: center; margin-top: 0.6rem; line-height: 1.3; }
+
+    #closing { min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; text-align: center; background: radial-gradient(ellipse at center, rgba(232,160,176,0.06) 0%, transparent 70%); }
+    .closing-quote { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: clamp(1.3rem, 3vw, 1.8rem); color: var(--ink-muted); max-width: 480px; line-height: 1.7; opacity: 0; transform: translateY(20px); transition: opacity 1s ease, transform 1s ease; }
+    .closing-quote.visible { opacity: 1; transform: translateY(0); }
+    .closing-heart { font-size: 1.8rem; margin-top: 2.5rem; display: block; animation: heartbeat 2.5s ease infinite; opacity: 0; transition: opacity 1s ease 0.5s; }
+    .closing-heart.visible { opacity: 1; }
+    @keyframes heartbeat { 0%,100% { transform: scale(1); } 15% { transform: scale(1.2); } 30% { transform: scale(1); } 45% { transform: scale(1.1); } }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 600px) {
+      body { font-size: 18px; }
+      .cover-title { font-size: clamp(3.5rem, 20vw, 6rem); }
+      #letter { padding: 4rem 1.5rem; }
+      .dropcap { font-size: 4rem; }
+      .polaroid { width: 160px; }
+    }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--rose-dim); }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<canvas id="flowerCanvas"></canvas>
+
+<section id="cover">
+  <div class="cover-label">Uma mensagem para você</div>
+  <h1 class="cover-title">Para a<br><span>Dani.</span></h1>
+  <p class="cover-sub">com carinho, de longe.</p>
+
+  <div class="cover-counter">
+    <div class="counter-num" id="dayCount">—</div>
+    <div class="counter-label">dias de conversas</div>
+  </div>
+
+  <div class="cover-scroll">
+    <div class="cover-scroll-line"></div>
+    continuar
+  </div>
+</section>
+
+<section id="letter">
+  <div class="letter-wrap">
+    <div class="letter-ornament">✦ ✦ ✦</div>
+
+    <div class="letter-block">
+      <div class="letter-section-mark">quem você é para mim</div>
+      <p class="letter-p">
+        <span class="dropcap">T</span>
+        em pessoas que a gente encontra do nada e que ficam. Você foi assim <em>uma adição no jogo que virou a melhor companhia que eu poderia ter.</em> Não sei bem explicar, mas conversar com você é fácil, e isso é raro.
+      </p>
+    </div>
+
+    <div class="letter-block">
+      <p class="letter-p">
+        Você é gentil de um jeito que faz diferença. <strong>Inteligente, carismática,</strong> e mesmo sem perceber, me deixa com vontade de ser melhor.
+      </p>
+    </div>
+
+    <div class="letter-divider">
+      <div class="divider-line"></div>
+      <div class="divider-flower">✿</div>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="letter-block">
+      <div class="letter-section-mark">o que preciso te dizer</div>
+      <p class="letter-p">
+        Mas às vezes eu erro. Recentemente eu errei com você, e <em>o ciúme falou mais alto do que eu gostaria.</em> Você não merece isso. Merece leveza, merece alguém que confie em você e eu quero ser essa pessoa.
+      </p>
+    </div>
+
+    <div class="letter-block">
+      <p class="apology"><em>Me desculpa.</em></p>
+    </div>
+
+    <div class="letter-divider">
+      <div class="divider-line"></div>
+      <div class="divider-flower">✿</div>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="letter-block">
+      <div class="letter-section-mark">o que fica</div>
+      <p class="letter-p">
+        Gosto muito de você, Dani. <em>Da sua companhia, do seu jeito,</em> de tudo que a gente vai construindo aos poucos. Obrigado por existir do jeito que você é.
+      </p>
+    </div>
+
+    <div class="letter-sign" style="text-align:center;">
+      <div class="sign-from">com carinho,</div>
+      <div class="sign-name">Felipe</div>
+    </div>
+  </div>
+</section>
+
+<section id="memories">
+  <div class="section-header">
+    <span class="section-tag">nossos momentos</span>
+    <h2 class="section-title">Memórias <span>juntos.</span></h2>
+  </div>
+
+  <div class="polaroids">
+
+    <div class="polaroid">
+      <img class="polaroid-img" src="foto1.jpg" alt="memória" />
+      <p class="polaroid-caption">Eu e você ❤️</p>
+    </div>
+
+    <div class="polaroid">
+      <img class="polaroid-img" src="foto2.jpg" alt="memória" />
+      <p class="polaroid-caption">Você sendo a pessoa mais importante para mim ❤️</p>
+    </div>
+
+  </div>
+</section>
+
+<section id="closing">
+  <p class="closing-quote">"No fim do dia, ainda é você com quem eu quero conversar."</p>
+  <span class="closing-heart">🌸</span>
+</section>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursorRing');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
+    ring.style.left   = e.clientX + 'px';
+    ring.style.top    = e.clientY + 'px';
+  });
+
+  const start = new Date('2026-01-18');
+  const today = new Date();
+  const days  = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+  document.getElementById('dayCount').textContent = days;
+
+  const canvas = document.getElementById('flowerCanvas');
+  const ctx    = canvas.getContext('2d');
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const COLORS = ['#e8a0b0','#c4a8d4','#a8c4a0','#e8c4a0','#d4b896'];
+
+  class Petal {
+    constructor() { this.reset(true); }
+    reset(init = false) {
+      this.x       = Math.random() * canvas.width;
+      this.y       = init ? Math.random() * canvas.height : -15;
+      this.size    = 3 + Math.random() * 6;
+      this.vy      = 0.35 + Math.random() * 0.7;
+      this.vx      = (Math.random() - 0.5) * 0.5;
+      this.rot     = Math.random() * Math.PI * 2;
+      this.rotV    = (Math.random() - 0.5) * 0.02;
+      this.color   = COLORS[Math.floor(Math.random() * COLORS.length)];
+      this.opacity = 0.12 + Math.random() * 0.4;
+      this.w       = Math.random() * Math.PI * 2;
+      this.wv      = 0.01 + Math.random() * 0.02;
+    }
+    update() {
+      this.w += this.wv;
+      this.x += this.vx + Math.sin(this.w) * 0.35;
+      this.y += this.vy; this.rot += this.rotV;
+      if (this.y > canvas.height + 20) this.reset();
+    }
+    draw() {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.rot);
+      ctx.globalAlpha = this.opacity;
+      ctx.fillStyle   = this.color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, this.size, this.size * 0.45, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  class Sprig {
+    constructor(x, y, sc, ang) {
+      this.x = x; this.y = y; this.sc = sc; this.ang = ang;
+      this.op = 0.07 + Math.random() * 0.08;
+      this.col = COLORS[Math.floor(Math.random() * COLORS.length)];
+    }
+    draw() {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.ang);
+      ctx.scale(this.sc, this.sc);
+      ctx.globalAlpha = this.op;
+      ctx.strokeStyle = '#a8c4a0'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-65); ctx.stroke();
+      ctx.fillStyle = '#a8c4a0';
+      [-20,20].forEach(a => {
+        ctx.save(); ctx.translate(0,-32); ctx.rotate(a*Math.PI/180);
+        ctx.beginPath(); ctx.ellipse(10,0,15,6,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+      });
+      ctx.fillStyle = this.col;
+      for(let i=0;i<5;i++){
+        ctx.save(); ctx.translate(0,-68); ctx.rotate(i/5*Math.PI*2);
+        ctx.beginPath(); ctx.ellipse(0,-8,5,10,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+      }
+      ctx.fillStyle='#f5e0b0'; ctx.beginPath(); ctx.arc(0,-68,5,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  const petals = Array.from({length:55}, () => new Petal());
+  const sprigs = Array.from({length:10}, () => new Sprig(
+    Math.random() < 0.5 ? 10 + Math.random() * 100 : canvas.width - 10 - Math.random() * 100,
+    80 + Math.random() * (canvas.height - 160),
+    0.75 + Math.random() * 0.5,
+    (Math.random() - 0.5) * 0.7
+  ));
+
+  (function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    sprigs.forEach(s => s.draw());
+    petals.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(loop);
+  })();
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) setTimeout(() => e.target.classList.add('visible'), i * 120);
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll(
+    '.letter-block, .letter-divider, .letter-sign, .section-header, .polaroid, .closing-quote, .closing-heart'
+  ).forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
